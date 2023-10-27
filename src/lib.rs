@@ -1,47 +1,54 @@
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::error::Error;
-use urlencoding::encode;
 
 #[no_mangle]
 pub fn translate(
-    text: &str, // 待翻译文本
-    from: &str, // 源语言
-    to: &str,   // 目标语言
-    // (pot会根据info.json 中的 language 字段传入插件需要的语言代码，无需再次转换)
-    detect: &str, // 检测到的语言 (若使用 detect, 需要手动转换)
-    needs: HashMap<String, String>, // 插件需要的其他参数,由info.json定义
+    text: &str,
+    from: &str,
+    to: &str,
+    _detect: &str,
+    _needs: HashMap<String, String>,
 ) -> Result<Value, Box<dyn Error>> {
     let client = reqwest::blocking::ClientBuilder::new().build()?;
 
-    let mut url = match needs.get("requestPath") {
-        Some(url) => url.to_string(),
-        None => "lingva.pot-app.com".to_string(),
-    };
-    if url.is_empty() {
-        url = "lingva.pot-app.com".to_string();
-    }
-    if !url.starts_with("http") {
-        url = format!("https://{}", url);
-    }
-
-    let plain_text = text.replace("/", "@@");
-    let encode_text = encode(plain_text.as_str());
-
     let res: Value = client
-        .get(format!("{url}/api/v1/{from}/{to}/{encode_text}"))
+        .post(format!(
+            "http://res.d.hjfile.cn/v10/dict/translation/{from}/{to}"
+        ))
+        .header("Host", "res.d.hjfile.cn")
+        .header("Origin", "http://res.d.hjfile.cn")
+        .header("Referer", "http://res.d.hjfile.cn/app/trans")
+        .header(
+            "User-Agent",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+        )
+        .header(
+            "Content-Type",
+            "application/x-www-form-urlencoded; charset=UTF-8",
+        )
+        .header(
+            "Cookie",
+            "HJ_UID=390f25c7-c9f3-b237-f639-62bd23cd431f; HJC_USRC=uzhi; HJC_NUID=1",
+        )
+        .form(&json!({"content":text}))
         .send()?
         .json()?;
 
-    fn parse_result(res: Value) -> Option<String> {
-        let result = res.as_object()?.get("translation")?.as_str()?.to_string();
+    fn parse_result(res: &Value) -> Option<String> {
+        let result = res
+            .as_object()?
+            .get("data")?
+            .as_object()?
+            .get("content")?
+            .as_str()?;
 
-        Some(result.replace("@@", "/"))
+        Some(result.to_string())
     }
-    if let Some(result) = parse_result(res) {
+    if let Some(result) = parse_result(&res) {
         return Ok(Value::String(result));
     } else {
-        return Err("Response Parse Error".into());
+        return Err(format!("Response Parse Error: {}", &res.to_string()).into());
     }
 }
 
@@ -50,8 +57,7 @@ mod tests {
     use super::*;
     #[test]
     fn try_request() {
-        let mut needs = HashMap::new();
-        needs.insert("requestPath".to_string(), "lingva.pot-app.com".to_string());
+        let needs = HashMap::new();
         let result = translate("你好 世界！", "auto", "en", "zh_cn", needs).unwrap();
         println!("{result}");
     }
