@@ -1,14 +1,14 @@
 {
-  "id": "[plugin].com.pot-app.lingva",
+  "id": "[plugin].com.TechDecryptor.baidu",
   "plugin_type": "translate",
-  "icon": "lingva.svg",
-  "display": "Lingva",
-  "homepage": "https://github.com/pot-app/pot-app-translate-plugin-template",
-  "needs": [{ "key": "requestPath", "display": "请求地址" }],
+  "icon": "baidu.png",
+  "display": "百度翻译",
+  "homepage": "https://github.com/TechDecryptor/pot-app-translate-plugin-baidu",
+  "needs": [],
   "language": {
     "auto": "auto",
-    "zh_cn": "zh",
-    "zh_tw": "zh_HANT",
+    "zh_cn": "cn",
+    "zh_tw": "cn",
     "en": "en",
     "ja": "ja",
     "ko": "ko",
@@ -18,15 +18,10 @@
     "de": "de",
     "it": "it",
     "tr": "tr",
-    "pt": "pt",
+    "pt_pt": "pt",
     "pt_br": "pt",
-    "vi": "vi",
     "id": "id",
     "th": "th",
-    "ms": "ms",
-    "ar": "ar",
-    "hi": "hi",
-    "mn_cy": "mn",
-    "km": "km"
+    "hi": "hi"
   }
 }
