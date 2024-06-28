@@ -1,5 +1,5 @@
 {
-  "id": "[plugin].com.TechDecryptor.baidu",
+  "id": "plugin.com.TechDecryptor.baidu",
   "plugin_type": "translate",
   "icon": "baidu.png",
   "display": "百度翻译",
